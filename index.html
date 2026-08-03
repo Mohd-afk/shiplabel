@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShipLabel Studio — E-Commerce Shipping Label Manager</title>
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- PDF Processing Libraries (Client-side, 100% Offline) -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Navigation Sidebar -->
+  <aside id="sidebar">
+    <div class="brand">
+      <span class="brand-icon">🏷️</span>
+      <span class="brand-title">ShipLabel</span>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active" data-view="dashboard">
+        <span>📊</span> Dashboard
+      </li>
+      <li class="nav-item" data-view="templates">
+        <span>📐</span> Templates
+      </li>
+      <li class="nav-item" data-view="process">
+        <span>🏷️</span> Process Labels
+      </li>
+      <li class="nav-item" data-view="batch">
+        <span>⚡</span> Batch Processor
+      </li>
+      <li class="nav-item" data-view="history">
+        <span>📜</span> History Log
+      </li>
+      <li class="nav-item" data-view="settings">
+        <span>⚙️</span> Settings
+      </li>
+      <li class="nav-item" data-view="about">
+        <span>ℹ️</span> About
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content View Container -->
+  <main id="main-content">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view active">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-desc">Automate e-commerce shipping label cropping & grid formatting for Flipkart, Meesho, Amazon, and Shiprocket.</p>
+        </div>
+      </div>
+
+      <div class="card" style="background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-color: #bfdbfe;">
+        <h2 class="card-title" style="color: #1e40af;">🚀 Welcome to ShipLabel Web Studio</h2>
+        <p style="font-size: 13px; color: #334155; line-height: 1.6;">
+          Process thousands of shipping labels 100% offline directly in your browser. Vector-quality crops, custom templates, smart marketplace auto-detection, and instant A4 grid sheet assembly. Zero installation required.
+        </p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card">
+          <div class="dash-icon">🏷️</div>
+          <div class="dash-title">Process Labels</div>
+          <div class="dash-desc">Crop single or multiple PDF shipping labels and export to Thermal 3x5 or A4 Grid sheets.</div>
+          <button class="btn btn-primary" onclick="app.switchView('process')">Open Processor</button>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-icon">📐</div>
+          <div class="dash-title">Template Manager</div>
+          <div class="dash-desc">Learn new crop templates for Flipkart, Meesho, Amazon, or custom PDF layouts.</div>
+          <button class="btn btn-primary" onclick="app.switchView('templates')">Manage Templates</button>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-icon">⚡</div>
+          <div class="dash-title">Batch Processor</div>
+          <div class="dash-desc">High-speed client-side processing for hundreds of PDFs simultaneously.</div>
+          <button class="btn btn-primary" onclick="app.switchView('batch')">Batch Mode</button>
+        </div>
+
+        <div class="dash-card">
+          <div class="dash-icon">📜</div>
+          <div class="dash-title">Processing History</div>
+          <div class="dash-desc">View past label processing sessions and re-download recent outputs.</div>
+          <button class="btn btn-primary" onclick="app.switchView('history')">View History</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. TEMPLATES VIEW -->
+    <section id="view-templates" class="view">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Template Manager (Learn System)</h1>
+          <p class="page-desc">Create and manage custom label crop templates for your marketplace PDFs.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" id="btn-export-templates">📤 Export JSON</button>
+          <button class="btn btn-secondary" id="btn-import-templates">📥 Import JSON</button>
+          <input type="file" id="import-templates-file" accept=".json" style="display:none;">
+          <button class="btn btn-primary" id="btn-create-template">➕ Create New Template</button>
+        </div>
+      </div>
+
+      <div class="template-grid" id="template-list-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- 3. PROCESS VIEW -->
+    <section id="view-process" class="view">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Process Shipping Labels</h1>
+          <p class="page-desc">Upload PDFs, select a template, and format output for Thermal or A4 Sheet printers.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">1. Import Shipping Label PDFs</h3>
+        <div class="dropzone" id="process-dropzone">
+          <div class="dropzone-icon">📄</div>
+          <div class="dropzone-title">Click to Select PDFs or Drag & Drop Files Here</div>
+          <div class="dropzone-desc">Supports Single PDF, Multiple PDFs, and Batch collections</div>
+          <input type="file" id="process-file-input" multiple accept=".pdf" style="display:none;">
+        </div>
+        <div id="process-file-status" style="margin-top: 10px; font-size: 12px; color: var(--text-secondary);">No files selected</div>
+        <div id="process-autodetect-badge" style="display:none; margin-top: 8px;" class="badge"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">2. Select Crop Template</h3>
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label>Crop Template:</label>
+            <select id="process-template-select">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">3. Output Settings</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Output Mode:</label>
+            <select id="process-output-mode">
+              <option value="Thermal 3x5">Thermal 3x5 Inch</option>
+              <option value="Thermal 4x6">Thermal 4x6 Inch</option>
+              <option value="A4 Sheet (4-up Grid)" selected>A4 Sheet (4-Up Grid)</option>
+              <option value="A4 Sheet (6-up Grid)">A4 Sheet (6-Up Grid)</option>
+              <option value="A4 Sheet (2-up Grid)">A4 Sheet (2-Up Grid)</option>
+              <option value="PNG ZIP">PNG Images (ZIP Archive)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Paper Size:</label>
+            <select id="process-paper-size">
+              <option value="A4" selected>A4</option>
+              <option value="Letter">Letter</option>
+              <option value="Legal">Legal</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="flex-direction: row; align-items: center; margin-top: 20px;">
+            <input type="checkbox" id="process-cut-marks" checked>
+            <label for="process-cut-marks" style="margin-left: 6px; cursor: pointer;">Draw Cut Marks</label>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-process-submit" style="padding: 14px; font-size: 15px;">🚀 Process & Download Output</button>
+    </section>
+
+    <!-- 4. BATCH VIEW -->
+    <section id="view-batch" class="view">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Batch Processor</h1>
+          <p class="page-desc">Process hundreds of PDFs in browser memory in seconds.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Bulk Import</h3>
+        <div class="dropzone" id="batch-dropzone">
+          <div class="dropzone-icon">⚡</div>
+          <div class="dropzone-title">Select or Drop Multiple PDF Files</div>
+          <input type="file" id="batch-file-input" multiple accept=".pdf" style="display:none;">
+        </div>
+        <div id="batch-file-status" style="margin-top: 10px; font-size: 12px; color: var(--text-secondary);">No files loaded</div>
+        <div id="batch-autodetect-badge" style="display:none; margin-top: 8px;" class="badge"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Batch Options</h3>
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label>Template:</label>
+            <select id="batch-template-select"></select>
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label>Output Format:</label>
+            <select id="batch-format-select">
+              <option value="A4 Sheet (4-up Grid)" selected>A4 Sheet (4-Up Grid)</option>
+              <option value="A4 Sheet (6-up Grid)">A4 Sheet (6-Up Grid)</option>
+              <option value="Thermal 3x5">Thermal 3x5</option>
+              <option value="Thermal 4x6">Thermal 4x6</option>
+              <option value="PNG ZIP">PNG Images (ZIP Archive)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="batch-progress-fill"></div>
+          </div>
+          <div id="batch-progress-status" style="font-size: 12px; color: var(--text-secondary);">Ready</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-batch-start" style="padding: 14px; font-size: 15px;">⚡ Start Batch Processing</button>
+    </section>
+
+    <!-- 5. HISTORY VIEW -->
+    <section id="view-history" class="view">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Processing History</h1>
+          <p class="page-desc">Track and review all previous label crop sessions in this browser.</p>
+        </div>
+        <button class="btn btn-danger" id="btn-clear-history">🗑️ Clear History</button>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x: auto;">
+          <table class="history-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                <th style="padding: 10px;">Date & Time</th>
+                <th style="padding: 10px;">Marketplace</th>
+                <th style="padding: 10px;">Files</th>
+                <th style="padding: 10px;">Output Mode</th>
+                <th style="padding: 10px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. SETTINGS VIEW -->
+    <section id="view-settings" class="view">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Settings</h1>
+          <p class="page-desc">Configure client-side application defaults.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Application Defaults</h3>
+        <div class="form-row" style="gap: 20px; align-items: flex-start;">
+          <div class="form-group" style="min-width: 220px;">
+            <label>Default Paper Size:</label>
+            <select id="setting-default-paper">
+              <option value="A4" selected>A4</option>
+              <option value="Letter">Letter</option>
+              <option value="Legal">Legal</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="min-width: 220px;">
+            <label>Default Output Mode:</label>
+            <select id="setting-default-mode">
+              <option value="A4 Sheet (4-up Grid)" selected>A4 Sheet (4-Up Grid)</option>
+              <option value="A4 Sheet (6-up Grid)">A4 Sheet (6-Up Grid)</option>
+              <option value="Thermal 3x5">Thermal 3x5</option>
+              <option value="Thermal 4x6">Thermal 4x6</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="form-group" style="flex-direction: row; align-items: center;">
+            <input type="checkbox" id="setting-cut-marks" checked>
+            <label for="setting-cut-marks" style="margin-left: 8px; cursor: pointer;">Enable Cut Marks by Default</label>
+          </div>
+
+          <div class="form-group" style="flex-direction: row; align-items: center;">
+            <input type="checkbox" id="setting-autodetect" checked>
+            <label for="setting-autodetect" style="margin-left: 8px; cursor: pointer;">Smart Auto-Detect Marketplace on Upload</label>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <button class="btn btn-primary" id="btn-save-settings">💾 Save Settings</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. ABOUT VIEW -->
+    <section id="view-about" class="view">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">About ShipLabel Studio</h1>
+          <p class="page-desc">Version 1.0.0 (Web Studio Edition)</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">ShipLabel — E-Commerce Label Manager</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+          ShipLabel is a professional web application built for Flipkart, Meesho, Amazon, Shiprocket, and custom marketplace shipping label automation.<br><br>
+          Features 100% offline client-side vector PDF cropping, HTML5 interactive crop template learning, smart marketplace detection, and instant A4 grid sheet assembly. Zero installation required.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Create Template Modal Dialog -->
+  <div class="modal-overlay" id="template-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 style="font-size: 16px; font-weight: 700;">Learn New Template — Crop Box Editor</h3>
+        <button class="btn btn-secondary" id="btn-close-modal" style="padding: 4px 10px;">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label>Template Name:</label>
+            <input type="text" id="modal-tmpl-name" placeholder="e.g. Flipkart 3x5 Thermal">
+          </div>
+
+          <div class="form-group">
+            <label>Marketplace:</label>
+            <select id="modal-tmpl-mp">
+              <option value="Flipkart">Flipkart</option>
+              <option value="Meesho">Meesho</option>
+              <option value="Amazon">Amazon</option>
+              <option value="Shiprocket">Shiprocket</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Label Size:</label>
+            <select id="modal-tmpl-size">
+              <option value="3x5">3x5 Inch</option>
+              <option value="4x6">4x6 Inch</option>
+              <option value="A6">A6</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--primary);">
+            💡 Drag mouse on sample PDF to draw crop box, or use a quick preset:
+          </div>
+          <div id="crop-dimensions-info" style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">
+            Crop: 100% x 100%
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" id="preset-flipkart" style="padding: 4px 10px; font-size: 11px;">🎯 Preset Flipkart 3x5</button>
+          <button class="btn btn-secondary" id="preset-top-half" style="padding: 4px 10px; font-size: 11px;">📐 Top Half (Meesho/Amazon)</button>
+          <button class="btn btn-secondary" id="preset-reset" style="padding: 4px 10px; font-size: 11px;">🔄 Full Page</button>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="crop-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+        <button class="btn btn-success" id="btn-save-template">💾 Save Crop Template</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/template_manager.js"></script>
+  <script src="js/pdf_engine.js"></script>
+  <script src="js/crop_canvas.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

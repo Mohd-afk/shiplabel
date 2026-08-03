@@ -1,0 +1,8 @@
+outputs/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.pdf
+*.png
+!assets/
