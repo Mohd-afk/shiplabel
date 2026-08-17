@@ -522,7 +522,9 @@ canvas {
 @media (max-width: 768px) {
   body {
     flex-direction: column;
-    height: 100dvh;
+    height: auto;
+    overflow: visible;
+    min-height: 100dvh;
   }
 
   .mobile-header {
@@ -566,11 +568,11 @@ canvas {
   }
 
   #main-content {
-    padding: 16px 16px 120px 16px;
-    padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    padding: 16px 16px 100px 16px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
     overflow-x: hidden;
-    overflow-y: auto;
-    flex: 1;
+    overflow-y: visible;
+    flex: none;
   }
 
   .view {
