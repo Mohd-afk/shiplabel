@@ -522,10 +522,12 @@ canvas {
 @media (max-width: 768px) {
   body {
     flex-direction: column;
+    height: 100dvh;
   }
 
   .mobile-header {
     display: flex;
+    flex-shrink: 0;
   }
 
   .mobile-only {
@@ -538,6 +540,7 @@ canvas {
     left: -280px; /* Hide by default */
     width: 260px;
     height: 100vh;
+    height: 100dvh;
     z-index: 999;
     box-shadow: var(--shadow-md);
     transition: left 0.3s ease;
@@ -563,8 +566,15 @@ canvas {
   }
 
   #main-content {
-    padding: 16px;
+    padding: 16px 16px 120px 16px;
+    padding-bottom: calc(120px + env(safe-area-inset-bottom));
     overflow-x: hidden;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .view {
+    padding-bottom: 40px;
   }
 
   .page-header {
@@ -584,7 +594,12 @@ canvas {
 
   .modal {
     width: 95%;
-    max-height: 95vh;
+    max-height: 90vh;
+    max-height: 90dvh;
+  }
+
+  .modal-body {
+    padding-bottom: 60px;
   }
 }
 
