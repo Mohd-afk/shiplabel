@@ -130,10 +130,34 @@ class App {
 
   // Navigation
   bindNavigation() {
+    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+    const sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebar-overlay");
+
+    const toggleSidebar = (show) => {
+      if (!sidebar || !overlay) return;
+      if (show) {
+        sidebar.classList.add("open");
+        overlay.classList.add("active");
+      } else {
+        sidebar.classList.remove("open");
+        overlay.classList.remove("active");
+      }
+    };
+
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener("click", () => toggleSidebar(true));
+    if (sidebarCloseBtn) sidebarCloseBtn.addEventListener("click", () => toggleSidebar(false));
+    if (overlay) overlay.addEventListener("click", () => toggleSidebar(false));
+
     document.querySelectorAll(".nav-item").forEach(item => {
       item.addEventListener("click", () => {
         const view = item.getAttribute("data-view");
         this.switchView(view);
+        // Close sidebar on mobile after clicking
+        if (window.innerWidth <= 768) {
+          toggleSidebar(false);
+        }
       });
     });
   }

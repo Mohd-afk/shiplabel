@@ -18,11 +18,25 @@
 </head>
 <body>
 
-  <!-- Navigation Sidebar -->
-  <aside id="sidebar">
+  <!-- Mobile Header -->
+  <header id="mobile-header" class="mobile-header">
     <div class="brand">
       <span class="brand-icon">🏷️</span>
       <span class="brand-title">ShipLabel</span>
+    </div>
+    <button id="mobile-menu-btn" class="btn btn-secondary" style="padding: 4px 8px; font-size: 18px;">☰</button>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Navigation Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-icon">🏷️</span>
+        <span class="brand-title">ShipLabel</span>
+      </div>
+      <button id="sidebar-close-btn" class="btn btn-secondary mobile-only" style="padding: 4px 8px; font-size: 14px;">✕</button>
     </div>
 
     <ul class="nav-menu">
